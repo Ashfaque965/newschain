@@ -1,0 +1,98 @@
+
+
+
+```yaml id="q4w8yx"
+# .golangci.yml
+# https://golangci-lint.run/
+
+version: "2"
+
+run:
+  timeout: 5m
+
+  tests: true
+
+  modules-download-mode: readonly
+
+  allow-parallel-runners: true
+
+output:
+  formats:
+    text:
+      path: stdout
+
+linters:
+  default: none
+
+  enable:
+    # Go basics
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+    # Code quality
+    - revive
+    - gosimple
+    - misspell
+    - unconvert
+    - unparam
+
+    # Bug detection
+    - bodyclose
+    - errorlint
+    - copyloopvar
+
+    # Security
+    - gosec
+
+    # Performance
+    - prealloc
+
+    # Style
+    - whitespace
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+  exclude-dirs:
+    - vendor
+    - bin
+    - build
+    - dist
+    - tmp
+    - out
+    - broadcast
+    - cache
+
+linters-settings:
+  revive:
+    confidence: 0.8
+
+    rules:
+      - name: exported
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+      - name: indent-error-flow
+      - name: empty-block
+      - name: superfluous-else
+
+  gosec:
+    excludes:
+      - G404
+
+  misspell:
+    locale: US
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+
+  settings:
+    gofumpt:
+      extra-rules: true
+```
