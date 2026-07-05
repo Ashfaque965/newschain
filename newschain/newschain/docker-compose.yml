@@ -1,0 +1,132 @@
+```yaml
+version: "3.9"
+
+services:
+  newschain:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: newschain
+
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      PORT: 8080
+
+      DB_PATH: /app/data/newschain.db
+
+      RPC_URL: https://sepolia.base.org
+
+      CHAIN_ID: 84532
+
+      CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}
+
+      SIGNER_PRIVATE_KEY: ${SIGNER_PRIVATE_KEY}
+
+      IPFS_API_URL: http://ipfs:5001
+
+    depends_on:
+      ipfs:
+        condition: service_healthy
+
+    volumes:
+      - sqlite-data:/app/data
+
+    networks:
+      - newschain-network
+
+  ipfs:
+    image: ipfs/kubo:latest
+
+    container_name: newschain-ipfs
+
+    restart: unless-stopped
+
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+      - "8081:8080"
+
+    volumes:
+      - ipfs-data:/data/ipfs
+
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+    networks:
+      - newschain-network
+
+  postgres:
+    image: postgres:17
+
+    container_name: newschain-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: newschain
+      POSTGRES_USER: newschain
+      POSTGRES_PASSWORD: newschain
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U newschain"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    profiles:
+      - postgres
+
+    networks:
+      - newschain-network
+
+  redis:
+    image: redis:7-alpine
+
+    container_name: newschain-redis
+
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    command: redis-server --appendonly yes
+
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    profiles:
+      - redis
+
+    networks:
+      - newschain-network
+
+volumes:
+  sqlite-data:
+  ipfs-data:
+  postgres-data:
+  redis-data:
+
+networks:
+  newschain-network:
+    driver: bridge
+```
